@@ -1,0 +1,11 @@
+﻿[Bb]in
+[Oo]bj
+*.suo
+*.user
+*.sdf
+.vs/
+
+_ReSharper.*
+_ReSharper*/
+packages
+.idea

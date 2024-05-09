@@ -1,0 +1,7 @@
+services:
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/nightly/aspire-dashboard:8.0.0-preview.6 
+    ports:
+      - 18888:18888
+      - 4317:18889
+    restart: on-failure
