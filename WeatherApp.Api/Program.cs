@@ -40,14 +40,9 @@ builder.Services.AddOpenTelemetry()
 			.AddHttpClientInstrumentation();
 	});
 
-var options = (OtlpExporterOptions o) =>
-{
-	o.Endpoint = new Uri("http://192.168.50.101:4317");
-};
-
-builder.Services.Configure<OpenTelemetryLoggerOptions>(logging => logging.AddOtlpExporter(options));
-builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => metrics.AddOtlpExporter(options));
-builder.Services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddOtlpExporter(options));
+builder.Services.Configure<OpenTelemetryLoggerOptions>(logging => logging.AddOtlpExporter());
+builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => metrics.AddOtlpExporter());
+builder.Services.ConfigureOpenTelemetryTracerProvider(tracing => tracing.AddOtlpExporter());
 
 builder.Services.AddHealthChecks()
 	.AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
@@ -99,6 +94,9 @@ app.MapGet("/weatherforecast", async (WeatherMetrics weatherMetrics) =>
 					summaries[Random.Shared.Next(summaries.Length)]
 				))
 			.ToArray();
+		
+		weatherMetrics.IncreaseWeatherRequestCount();
+		
 		return forecast;
 	})
 .WithName("GetWeatherForecast")
