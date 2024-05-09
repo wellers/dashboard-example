@@ -1,7 +1,6 @@
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -30,9 +29,7 @@ builder.Services.AddOpenTelemetry()
 	.WithTracing(x =>
 	{
 		if (builder.Environment.IsDevelopment())
-		{
 			x.SetSampler<AlwaysOnSampler>();
-		}
 
 		x.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("WeatherApp.Api"))
 			.AddAspNetCoreInstrumentation()
@@ -82,23 +79,23 @@ var summaries = new[]
 };
 
 app.MapGet("/weatherforecast", async (WeatherMetrics weatherMetrics) =>
-	{
-		using var _ = weatherMetrics.MeasureRequestDuration();
-		await Task.Delay(Random.Shared.Next(5, 100));
+{
+	using var _ = weatherMetrics.MeasureRequestDuration();
+	await Task.Delay(Random.Shared.Next(5, 100));
 
-		var forecast = Enumerable.Range(1, 5).Select(index =>
-				new WeatherForecast
-				(
-					DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-					Random.Shared.Next(-20, 55),
-					summaries[Random.Shared.Next(summaries.Length)]
-				))
-			.ToArray();
-		
-		weatherMetrics.IncreaseWeatherRequestCount();
-		
-		return forecast;
-	})
+	var forecast = Enumerable.Range(1, 5).Select(index =>
+			new WeatherForecast
+			(
+				DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+				Random.Shared.Next(-20, 55),
+				summaries[Random.Shared.Next(summaries.Length)]
+			))
+		.ToArray();
+	
+	weatherMetrics.IncreaseWeatherRequestCount();
+	
+	return forecast;
+})
 .WithName("GetWeatherForecast")
 .WithOpenApi();
 
@@ -136,12 +133,11 @@ public class WeatherMetrics
 public class TrackedRequestDuration(Histogram<double> histogram) : IDisposable
 {
 	private readonly long _requestStartTime = TimeProvider.System.GetTimestamp();
-	private readonly Histogram<double> _histogram = histogram;
 
 	public void Dispose()
 	{
 		var elapsed = TimeProvider.System.GetElapsedTime(_requestStartTime);
-		_histogram.Record(elapsed.TotalMilliseconds);
+		histogram.Record(elapsed.TotalMilliseconds);
 	}
 }
 
